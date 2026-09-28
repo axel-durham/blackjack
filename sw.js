@@ -1,6 +1,6 @@
 // Offline cache for the static app. Bump VERSION when shipping changes; pages are served
 // cache-first and refreshed in the background, so an update shows up on the next launch.
-const VERSION = 'bj-v3';
+const VERSION = 'bj-v4';
 const ASSETS = [
   './', './index.html', './style.css', './app.js', './ui.js', './store.js', './manifest.webmanifest',
   './icons/icon-180.png', './icons/icon-192.png', './icons/icon-512.png',
@@ -12,7 +12,10 @@ const ASSETS = [
 ];
 
 self.addEventListener('install', (e) => {
-  e.waitUntil(caches.open(VERSION).then((c) => c.addAll(ASSETS)).then(() => self.skipWaiting()));
+  // cache: 'reload' bypasses the HTTP cache (GitHub Pages sends max-age=600), so a new
+  // version never gets precached with the previous version's files.
+  const fresh = ASSETS.map((url) => new Request(url, { cache: 'reload' }));
+  e.waitUntil(caches.open(VERSION).then((c) => c.addAll(fresh)).then(() => self.skipWaiting()));
 });
 
 self.addEventListener('activate', (e) => {
@@ -25,7 +28,7 @@ self.addEventListener('fetch', (e) => {
   if (e.request.method !== 'GET') return;
   e.respondWith(caches.open(VERSION).then(async (cache) => {
     const cached = await cache.match(e.request, { ignoreSearch: true });
-    const fresh = fetch(e.request).then((res) => {
+    const fresh = fetch(e.request, { cache: 'no-cache' }).then((res) => {
       if (res.ok && new URL(e.request.url).origin === location.origin) cache.put(e.request, res.clone());
       return res;
     }).catch(() => cached);
