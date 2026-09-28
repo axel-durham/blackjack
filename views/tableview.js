@@ -21,6 +21,8 @@ export function tableEl(table, opts = {}) {
   const dealerTotal = !dealer.holeHidden && dealer.cards.length ? totalText(dealer.cards) : '';
   const seated = table.seats.map((s, i) => ({ s, i })).filter(({ s, i }) => opts.allSeats || s.hands.length || i === opts.hero);
   const cols = seated.length <= 2 ? seated.length || 1 : seated.length === 4 ? 2 : 3;
+  // Heads-up there is room for full-size cards.
+  const solo = seated.length === 1;
   return h('div', { class: 'felt', style: { gap: '12px' } },
     h('div', { class: 'dealer-spot' },
       h('div', { class: 'spot-label' }, 'Dealer'),
@@ -31,7 +33,7 @@ export function tableEl(table, opts = {}) {
       return h('div', { class: `seat ${hero ? 'hero' : ''} ${opts.turn?.seat === i ? 'active' : ''}` },
         h('div', { class: 'who' }, hero ? 'You' : opts.names?.[i] ?? `Seat ${i + 1}`),
         h('div', { class: 'hands' }, s.hands.map((hand, hi) => h('div', { class: `hand ${opts.turn?.seat === i && opts.turn?.hand === hi && s.hands.length > 1 ? 'current' : ''}` },
-          cardsEl(hand.cards, { size: 'sm', overlap: true }),
+          cardsEl(hand.cards, solo ? { overlap: hand.cards.length > 3 } : { size: 'sm', overlap: true }),
           h('div', { class: 'tot' }, opts.totals === false && !hand.result ? '' : totalText(hand.cards)),
           hand.result
             ? h('span', { class: `res ${hand.result}` }, RESULT_TEXT[hand.result])

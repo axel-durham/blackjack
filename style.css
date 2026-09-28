@@ -357,9 +357,9 @@ dialog.sheet::backdrop { background: #050c0bcc; }
   border: 5px dashed #ffffffcc; box-shadow: 0 0 0 2px #0005, 0 3px 0 #0006;
 }
 .chip:active { transform: translateY(2px); box-shadow: 0 0 0 2px #0005; }
-.white, .disc.white { background: #f2f2ee; color: #222; }
+.chip.white, .disc.white { background: #f2f2ee; color: #222; }
 .chip.white { border-color: #3a6fb0cc; }
-.red, .disc.red { background: #c0392b; color: #fff; }
-.green, .disc.green { background: #1e8a4c; color: #fff; }
-.black, .disc.black { background: #1b1b1b; color: #fff; }
-.purple, .disc.purple { background: #6c3fa0; color: #fff; }
+.chip.red, .disc.red { background: #c0392b; color: #fff; }
+.chip.green, .disc.green { background: #1e8a4c; color: #fff; }
+.chip.black, .disc.black { background: #1b1b1b; color: #fff; }
+.chip.purple, .disc.purple { background: #6c3fa0; color: #fff; }
