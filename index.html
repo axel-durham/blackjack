@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#101e1c">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Blackjack Lab">
+  <meta name="description" content="Blackjack card counting trainer: basic strategy, Hi-Lo deviations, true count conversion, bet ramp, and full-table counting practice.">
+  <title>Blackjack Lab · Card counting trainer</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23101e1c'/%3E%3Ctext x='32' y='47' text-anchor='middle' font-size='46' fill='%23e9c47e'%3E♣%3C/text%3E%3C/svg%3E">
+  <link rel="apple-touch-icon" href="./icons/icon-180.png">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="stylesheet" href="./style.css">
+  <script type="module" src="./app.js"></script>
+</head>
+<body>
+  <header class="top">
+    <a class="brand" href="#basic" aria-label="Blackjack Lab home" style="text-decoration:none;color:inherit"><span class="suit" aria-hidden="true">♣</span>Blackjack <span class="lab">LAB</span></a>
+    <span class="rules-pill" id="rules-pill"></span>
+    <button class="icon-btn" id="open-settings" aria-label="Settings">⚙︎</button>
+  </header>
+  <main id="main"><div id="view" class="view"></div></main>
+  <nav class="tabs" aria-label="Training modes">
+    <a href="#basic" data-nav="basic"><span class="ti" aria-hidden="true">♠</span>Basic</a>
+    <a href="#index" data-nav="index"><span class="ti" aria-hidden="true">±</span>Index</a>
+    <a href="#count" data-nav="count"><span class="ti" aria-hidden="true">#</span>Count</a>
+    <a href="#bet" data-nav="bet"><span class="ti" aria-hidden="true">◎</span>TC &amp; Bet</a>
+    <a href="#sim" data-nav="sim"><span class="ti" aria-hidden="true">♦</span>Casino</a>
+    <a href="#charts" data-nav="charts"><span class="ti" aria-hidden="true">▦</span>Charts</a>
+  </nav>
+  <dialog class="sheet" id="settings" aria-labelledby="settings-title"></dialog>
+</body>
+</html>

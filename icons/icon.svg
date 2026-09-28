@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" fill="#101e1c"/>
+  <circle cx="256" cy="256" r="196" fill="#1e4436"/>
+  <circle cx="256" cy="256" r="196" fill="none" stroke="#e9c47e" stroke-width="10" stroke-dasharray="34 22"/>
+  <g transform="translate(256 262)">
+    <rect x="-92" y="-128" width="150" height="210" rx="16" fill="#e9c47e" transform="rotate(-10)"/>
+    <rect x="-52" y="-112" width="150" height="210" rx="16" fill="#fbfbf6" stroke="#d9dfd2" stroke-width="3" transform="rotate(8)"/>
+    <text x="30" y="40" transform="rotate(8)" text-anchor="middle" font-family="Georgia, serif" font-size="150" fill="#1b2a26">♣</text>
+  </g>
+</svg>

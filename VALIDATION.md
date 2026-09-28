@@ -1,0 +1,21 @@
+# Validation
+
+- **26 Node tests** (`npm test`):
+  - Every cell of the H17 pair, soft and hard charts is checked against the Blackjack Apprenticeship chart, cell by cell. S17 and double-deck differences, late surrender (including 17 v A under H17, no surrender on three cards, and 8,8 splitting before surrender) and fallbacks (no double on 3+ cards, Ds → stand, no-DAS splits) are covered too.
+  - Every BJA index play is checked on both sides of its index (e.g. 16 v 10 stands at RC +1 and hits at RC 0; 15 v A surrenders at −1 but not −2 under H17).
+  - Drill generators are fuzzed across 6D H17/S17, no surrender, 2D, and the expanded sets. Each generated hand actually exercises its deviation exactly when the count says it should.
+  - Computed plays never fire at a neutral count. The expanded set never changes a no-count answer.
+  - 400 simulated rounds at a 5-seat table: every dealt card is eventually seen, the running count matches the visible cards, and every hand settles. Hero decisions and insurance prompts are requested and honored.
+  - True count flooring, half-deck tray estimates, bet ramp and wong-out.
+  - `sw.js` precaches every shipped module and nothing that's missing.
+- **EV cross-check** (`npm run check`): the model agrees with basic strategy on 309 of 310 cells for 6D and 8D. The one exception is 15 v A surrender under H17, which BJA itself indexes at −1. For S17 the exception is A,7 v 2, a known borderline double. Every published BJA index is reproduced within ±1. Insurance breaks even at TC +3.2. Double deck agrees on 304–305 of 310 cells against the Wizard of Odds chart; the remaining cells are near-zero-EV borderline plays (9 v 2, A,3 v 4, A,6 v 2, 6,6 v 7 and 7,7 v 8 DAS splits). Borderline cells are drilled as running-count plays (0+ / 0−).
+- Spot checks against published extras beyond BJA: 12 v 5 −2 ✓, 12 v 6 (S17) −1 ✓, 14 v 10 surrender +3 ✓, 9,9 v 7 +3 ✓, 13 v 2 (S17) −1 ✓, 15 v A surrender (S17) +2 ✓, 13 v 3 −3 (published −2).
+- **Browser QA** at 375 px mobile width: all six tabs render with no console errors. Also exercised:
+  - Wrong-answer feedback with the chart row
+  - Index drill feedback with the TC math
+  - Full-table counting, including splits, busts and count prompts
+  - Deck countdown with the removed-card explanation
+  - TC and bet grading with half-deck leniency
+  - A casino session with a count check, graded mistakes and a summary
+  - The settings sheet, and switching to double deck plus expanded plays
+- **Not yet verified:** the published site on GitHub Pages; the service worker, which only registers over HTTPS; and home-screen install on a real iPhone.

@@ -1,0 +1,11 @@
+{
+  "name": "blackjack-lab",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test",
+    "check": "node scripts/ev-check.js",
+    "start": "python3 scripts/serve.py 4174"
+  }
+}
