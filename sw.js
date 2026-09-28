@@ -1,6 +1,6 @@
 // Offline cache for the static app. Bump VERSION when shipping changes; pages are served
 // cache-first and refreshed in the background, so an update shows up on the next launch.
-const VERSION = 'bj-v5';
+const VERSION = 'bj-v6';
 const ASSETS = [
   './', './index.html', './style.css', './app.js', './ui.js', './store.js', './manifest.webmanifest',
   './icons/icon-180.png', './icons/icon-192.png', './icons/icon-512.png',

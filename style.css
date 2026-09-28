@@ -338,3 +338,28 @@ dialog.sheet::backdrop { background: #050c0bcc; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }
+
+/* ---------- chips ---------- */
+.chip-picker { display: flex; flex-direction: column; gap: 10px; background: var(--bg); padding: 10px 16px 12px; border-top: 1px solid var(--line); }
+.panel .chip-picker { padding: 0; border: 0; background: none; }
+.chip-display { display: flex; align-items: flex-end; justify-content: center; gap: 14px; min-height: 58px; }
+.chip-amount { font-family: Manrope, sans-serif; font-weight: 800; font-size: 1.6rem; font-variant-numeric: tabular-nums; }
+.chip-amount.empty { font-size: .9rem; font-weight: 500; color: var(--muted); }
+.chip-pile { display: flex; align-items: flex-end; gap: 6px; }
+.chip-col { display: flex; flex-direction: column-reverse; align-items: center; }
+.chip-col .disc { width: 30px; height: 9px; border-radius: 50%; margin-top: -4px; border: 1px solid #0006; }
+.chip-col span { font-size: .65rem; color: var(--muted); margin-bottom: 2px; }
+.chips { display: flex; justify-content: center; gap: 8px; }
+.chip-tools .btn { min-height: 40px; padding: 8px 12px; }
+.btn.deal { font-size: 1.05rem; }
+.chip {
+  width: 58px; height: 58px; border-radius: 50%; font-weight: 800; font-size: .85rem;
+  border: 5px dashed #ffffffcc; box-shadow: 0 0 0 2px #0005, 0 3px 0 #0006;
+}
+.chip:active { transform: translateY(2px); box-shadow: 0 0 0 2px #0005; }
+.white, .disc.white { background: #f2f2ee; color: #222; }
+.chip.white { border-color: #3a6fb0cc; }
+.red, .disc.red { background: #c0392b; color: #fff; }
+.green, .disc.green { background: #1e8a4c; color: #fff; }
+.black, .disc.black { background: #1b1b1b; color: #fff; }
+.purple, .disc.purple { background: #6c3fa0; color: #fff; }

@@ -84,6 +84,7 @@ function buildSettings() {
         h('label', { class: 'field' }, h('span', null, 'Unit size ($)'),
           h('input', { type: 'number', inputmode: 'numeric', min: 1, value: ramp.unit,
             onchange: (e) => { ramp.unit = Math.max(1, Number(e.target.value) || 1); changed(); } })),
+        toggle('Bet with chips', () => settings.chips, (v) => { settings.chips = v; changed(); }, 'Casino and Bet drill: stack $ chips instead of tapping unit buttons'),
         toggle('Wong out', () => ramp.wongOut, (v) => { ramp.wongOut = v; changed(); }, 'Sit out (bet 0) when the count drops'),
         select('Wong out at', [[-1, 'TC −1 or lower'], [-2, 'TC −2 or lower'], [-3, 'TC −3 or lower']], () => ramp.wongOutAt,
           (v) => { ramp.wongOutAt = Number(v); changed(); }),

@@ -1,4 +1,4 @@
-import { h, seg, keypad, toast, buzz, bindKeys, ACTION_KEYS } from '../ui.js';
+import { h, seg, keypad, toast, buzz, bindKeys, ACTION_KEYS, chipPicker, money } from '../ui.js';
 import { settings, saveSettings, stats, saveStats, pct } from '../store.js';
 import { Shoe } from '../engine/cards.js';
 import { TableState, playRound } from '../engine/table.js';
@@ -37,7 +37,9 @@ export function render(root) {
         h('div', { class: 'small muted' }, 'Dealing speed'),
         seg([[1, 'Slow'], [2, 'Casino'], [3, 'Fast']], o.speed > 3 ? 2 : o.speed, (v) => { o.speed = v; saveSettings(); draw(); }),
         h('label', { class: 'field' }, h('span', null, 'Betting', h('small', null, 'Off: flat 1-unit bets, no bet grading — just play the hands')),
-          Object.assign(h('input', { type: 'checkbox', class: 'switch', onchange: (e) => { o.betting = e.target.checked; saveSettings(); } }), { checked: o.betting })),
+          Object.assign(h('input', { type: 'checkbox', class: 'switch', onchange: (e) => { o.betting = e.target.checked; saveSettings(); draw(); } }), { checked: o.betting })),
+        o.betting && h('label', { class: 'field' }, h('span', null, 'Bet with chips', h('small', null, `Stack $ chips instead of tapping units ($${settings.ramp.unit} unit)`)),
+          Object.assign(h('input', { type: 'checkbox', class: 'switch', onchange: (e) => { settings.chips = e.target.checked; saveSettings(); } }), { checked: !!settings.chips })),
         h('label', { class: 'field' }, h('span', null, 'Surprise count checks', h('small', null, 'Asked for the running count before some rounds')),
           Object.assign(h('input', { type: 'checkbox', class: 'switch', onchange: (e) => { o.checks = e.target.checked; saveSettings(); } }), { checked: !!o.checks })),
         h('label', { class: 'field' }, h('span', null, 'Show the count', h('small', null, 'Training wheels: display RC/TC on screen')),
@@ -68,8 +70,12 @@ export function render(root) {
     const names = Array.from({ length: seats }, (_, i) => `P${i + 1}`);
     const table = new TableState(new Shoe(rules.decks, rules.penetration), rules, seats);
     const delay = [0, 750, 480, 260][o.speed] ?? 480;
-    const s = { rounds: 0, net: 0, plays: 0, playOk: 0, bets: 0, betOk: 0, counts: 0, countOk: 0, curve: [0], mistakes: [] };
+    const chips = o.betting && settings.chips;
+    const fmt = (units) => (chips ? money(units, ramp.unit) : `${units}u`);
+    const fmtSigned = (units) => (units > 0 ? '+' : units < 0 ? '−' : '') + fmt(Math.abs(units));
+    const s = { chips, unit: ramp.unit, rounds: 0, net: 0, plays: 0, playOk: 0, bets: 0, betOk: 0, counts: 0, countOk: 0, curve: [0], mistakes: [] };
     let turn = null;
+    let lastStack = [];
 
     const top = h('div');
     const felt = h('div');
@@ -78,11 +84,11 @@ export function render(root) {
     const draw = () => {
       top.replaceChildren(shoeInfo(table, rules, { showCount: o.showCount, compact: true }),
         h('div', { class: 'statline', style: { marginTop: '8px' } },
-          h('span', null, 'Net ', h('b', null, `${s.net >= 0 ? '+' : ''}${s.net}u`)),
+          h('span', null, 'Net ', h('b', null, fmtSigned(s.net))),
           h('span', null, 'Plays ', h('b', null, pct(s.playOk, s.plays))),
           o.betting && h('span', null, 'Bets ', h('b', null, pct(s.betOk, s.bets))),
           h('span', null, 'Counts ', h('b', null, pct(s.countOk, s.counts)))));
-      felt.replaceChildren(tableEl(table, { hero, turn, names, showBets: true, allSeats: true }));
+      felt.replaceChildren(tableEl(table, { hero, turn, names, showBets: true, allSeats: true, unit: chips ? ramp.unit : null }));
     };
     const mistake = (text) => {
       s.mistakes.push(text);
@@ -127,6 +133,13 @@ export function render(root) {
         const wants = new Set(acceptTcs().map((tc) => betUnits(tc, ramp)));
         const bet = !o.betting ? 1 : await waitFor((done) => {
           panel.replaceChildren(h('div', { class: 'small muted', style: { textAlign: 'center' } }, 'Place your bet'));
+          if (chips) {
+            const extra = [['Leave', () => done(null)]];
+            if (ramp.wongOut) extra.unshift(['Sit out', () => done(0)]);
+            barSlot.replaceChildren(chipPicker({ unit: ramp.unit, maxBet: Math.max(...ramp.units) * ramp.unit, initial: lastStack, extra,
+              onBet: (d, stack) => { lastStack = stack; done(d / ramp.unit); } }));
+            return;
+          }
           barSlot.replaceChildren(h('div', { class: 'actions', style: { gridTemplateColumns: `repeat(${Math.min(betChoices(ramp).length, 4)}, 1fr)` } },
             betChoices(ramp).map((u) => h('button', { class: 'act chip', onclick: () => done(u) }, u === 0 ? 'Sit out' : `${u}u`)),
             h('button', { class: 'act H', onclick: () => done(null) }, 'Leave')));
@@ -134,8 +147,8 @@ export function render(root) {
         if (bet === null) break;
         if (o.betting) {
           s.bets++;
-          if (wants.has(bet)) s.betOk++;
-          else mistake(`Bet: at TC ${signed(tcNow)} your ramp says ${betUnits(tcNow, ramp)}u, you bet ${bet}u.`);
+          if ([...wants].some((u) => Math.abs(u - bet) < 1e-9)) s.betOk++;
+          else mistake(`Bet: at TC ${signed(tcNow)} your ramp says ${fmt(betUnits(tcNow, ramp))}${chips ? ` (${betUnits(tcNow, ramp)}u)` : ''}, you bet ${bet ? fmt(bet) : 'nothing'}.`);
         }
         barSlot.replaceChildren();
         panel.replaceChildren();
@@ -207,7 +220,7 @@ export function render(root) {
         draw();
         if (bet > 0) {
           panel.replaceChildren(h('div', { class: 'small', style: { textAlign: 'center', fontWeight: 700, color: net > 0 ? 'var(--good)' : net < 0 ? 'var(--bad)' : 'var(--muted)' } },
-            net > 0 ? `+${net}u` : net < 0 ? `${net}u` : 'Push'));
+            net ? fmtSigned(net) : 'Push'));
         }
         await waitFor((done) => {
           barSlot.replaceChildren(h('div', { class: 'actions two' },
@@ -233,11 +246,11 @@ export function render(root) {
       h('h1', { style: { fontSize: '1.3rem' } }, 'Session summary'),
       h('div', { class: 'summary-grid' },
         metric('Rounds', String(s.rounds)),
-        metric('Result', `${s.net >= 0 ? '+' : ''}${s.net}u`),
+        metric('Result', `${s.net >= 0 ? '+' : '−'}${Math.abs(s.net)}u`),
         metric('Playing', pct(s.playOk, s.plays)),
         s.bets > 0 && metric('Betting', pct(s.betOk, s.bets)),
         metric('Count checks', `${s.countOk}/${s.counts}`),
-        metric(`At $${settings.ramp.unit}/unit`, `${s.net * settings.ramp.unit >= 0 ? '+' : '−'}$${Math.abs(s.net * settings.ramp.unit)}`)),
+        metric(`At $${s.unit}/unit`, `${s.net * settings.ramp.unit >= 0 ? '+' : '−'}$${Math.abs(s.net * settings.ramp.unit)}`)),
       s.curve.length > 2 && spark(s.curve),
       s.mistakes.length
         ? h('div', null, h('div', { class: 'section-title', style: { marginBottom: '8px' } }, `Mistakes (${s.mistakes.length})`),

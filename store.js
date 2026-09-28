@@ -9,6 +9,7 @@ export const DEFAULT_SETTINGS = {
   ramp: { ...DEFAULT_RAMP, units: [...DEFAULT_RAMP.units] },
   autoAdvance: true,
   haptics: true,
+  chips: false, // bet with casino chips instead of unit buttons
   countDisplay: 'rc', // tc | rc | tray — how the Index drill shows the count
   count: { speed: 2, players: 4, askTc: false },
   sim: { players: 3, speed: 1, checks: true },

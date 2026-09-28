@@ -35,7 +35,7 @@ export function tableEl(table, opts = {}) {
           h('div', { class: 'tot' }, opts.totals === false && !hand.result ? '' : totalText(hand.cards)),
           hand.result
             ? h('span', { class: `res ${hand.result}` }, RESULT_TEXT[hand.result])
-            : opts.showBets && h('span', { class: 'bet-chip' }, `${hand.bet}u`)))));
+            : opts.showBets && h('span', { class: 'bet-chip' }, opts.unit ? `$${Math.round(hand.bet * opts.unit)}` : `${hand.bet}u`)))));
     })));
 }
 

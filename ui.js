@@ -126,3 +126,54 @@ export function bindKeys(root, handler) {
   };
   document.addEventListener('keydown', onKey);
 }
+
+// Casino chips. $1 only appears when the unit isn't a multiple of $5.
+const CHIP_COLORS = { 1: 'white', 5: 'red', 25: 'green', 100: 'black', 500: 'purple' };
+
+export function chipDenoms(unit, maxBet) {
+  const d = [5, 25, 100];
+  if (unit % 5) d.unshift(1);
+  if (maxBet >= 500) d.push(500);
+  return d;
+}
+
+/**
+ * Build a bet from chips. `initial` pre-stacks chips (the last bet), so rebetting is one
+ * tap on Deal. onBet(dollars, stack) fires on Deal; extra = [[label, onClick]] adds
+ * buttons such as Sit out / Leave.
+ */
+export function chipPicker({ unit, maxBet, onBet, extra = [], initial = [] }) {
+  const stack = [...initial];
+  const amount = h('div', { class: 'chip-amount' });
+  const pile = h('div', { class: 'chip-pile', 'aria-hidden': 'true' });
+  const total = () => stack.reduce((a, b) => a + b, 0);
+  const deal = h('button', { class: 'btn primary deal', onclick: () => onBet(total(), [...stack]) }, 'Deal');
+  const draw = () => {
+    const t = total();
+    amount.textContent = t ? `$${t}` : 'Tap chips to bet';
+    amount.classList.toggle('empty', !t);
+    deal.disabled = !t;
+    deal.textContent = t ? `Deal $${t}` : 'Deal';
+    const counts = {};
+    for (const c of stack) counts[c] = (counts[c] ?? 0) + 1;
+    pile.replaceChildren(...Object.keys(counts).map(Number).sort((a, b) => b - a).map((c) =>
+      h('div', { class: 'chip-col' },
+        Array.from({ length: Math.min(counts[c], 8) }, () => h('i', { class: `disc ${CHIP_COLORS[c]}` })),
+        counts[c] > 1 && h('span', null, `×${counts[c]}`))));
+  };
+  const chips = h('div', { class: 'chips' }, chipDenoms(unit, maxBet).map((c) =>
+    h('button', { class: `chip ${CHIP_COLORS[c]}`, 'aria-label': `$${c} chip`, onclick: () => { stack.push(c); draw(); } }, `$${c}`)));
+  draw();
+  return h('div', { class: 'chip-picker' },
+    h('div', { class: 'chip-display' }, pile, amount),
+    chips,
+    h('div', { class: 'row chip-tools' },
+      h('button', { class: 'btn ghost', onclick: () => { stack.pop(); draw(); } }, 'Undo'),
+      h('button', { class: 'btn ghost', onclick: () => { stack.length = 0; draw(); } }, 'Clear'),
+      h('button', { class: 'btn ghost', onclick: () => { stack.push(...stack); draw(); } }, '×2')),
+    h('div', { class: 'row' },
+      ...extra.map(([label, fn]) => h('button', { class: 'btn ghost', style: { flex: '0 0 auto' }, onclick: fn }, label)),
+      deal));
+}
+
+export const money = (units, unit) => `$${Math.round(units * unit * 100) / 100}`;
