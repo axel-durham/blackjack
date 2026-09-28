@@ -1,4 +1,4 @@
-import { h, seg, buzz } from '../ui.js';
+import { h, seg, buzz, put } from '../ui.js';
 import { settings, stats, saveStats, recordCell } from '../store.js';
 import { UPS, cellCode } from '../engine/tables.js';
 import { shortIndex } from '../engine/deviations.js';
@@ -194,7 +194,7 @@ export function render(root) {
       else recordCell('basic', situationKey(c.table, c.key, c.up), ok);
       if (!ok) {
         c.el.classList.add('wrong');
-        c.el.replaceChildren(
+        put(c.el,
           c.value ? h('s', null, c.value) : null,
           h('span', { class: 'fix' }, c.answer || '—'));
       } else if (c.value) c.el.classList.add('right');

@@ -2,6 +2,9 @@ import { isRed } from './engine/cards.js';
 import { settings } from './store.js';
 import { signed } from './engine/count.js';
 
+// Tabs stay mounted but hidden; only the visible one should react to keys or keep dealing.
+export const isShown = (el) => el.isConnected && !el.closest('[hidden]');
+
 export function h(tag, props, ...kids) {
   const el = document.createElement(tag);
   for (const [k, v] of Object.entries(props ?? {})) {
@@ -22,6 +25,11 @@ export function h(tag, props, ...kids) {
     el.append(kid.nodeType ? kid : String(kid));
   }
   return el;
+}
+
+// replaceChildren() prints null/false as text; skip them like h() does.
+export function put(el, ...kids) {
+  el.replaceChildren(...kids.flat().filter((k) => k != null && k !== false));
 }
 
 const RANK_LABEL = { T: '10' };
@@ -90,6 +98,7 @@ export function keypad({ question = 'Running count', onSubmit, submitLabel = 'Ch
     h('button', { class: 'enter', onclick: submit }, submitLabel));
   const onKey = (e) => {
     if (!pad.isConnected) return document.removeEventListener('keydown', onKey);
+    if (!isShown(pad)) return;
     if (/^[0-9]$/.test(e.key)) press(e.key);
     else if (e.key === '-' || e.key === '+') press('±');
     else if (e.key === 'Backspace') press('⌫');
@@ -121,6 +130,7 @@ export const ACTION_KEYS = { h: 'H', s: 'S', d: 'D', p: 'P', r: 'R' };
 export function bindKeys(root, handler) {
   const onKey = (e) => {
     if (!root.isConnected) return document.removeEventListener('keydown', onKey);
+    if (!isShown(root)) return;
     if (e.metaKey || e.ctrlKey || e.target.closest?.('input,select,textarea,dialog[open]')) return;
     if (handler(e.key.toLowerCase()) === true) e.preventDefault();
   };

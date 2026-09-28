@@ -1,4 +1,4 @@
-import { h, seg, keypad, toast, buzz, bindKeys, ACTION_KEYS, chipPicker, money } from '../ui.js';
+import { h, seg, keypad, toast, buzz, bindKeys, ACTION_KEYS, chipPicker, money, put } from '../ui.js';
 import { settings, saveSettings, stats, saveStats, pct } from '../store.js';
 import { Shoe } from '../engine/cards.js';
 import { TableState, playRound } from '../engine/table.js';
@@ -28,7 +28,7 @@ export function render(root) {
     o.showCount ??= false;
     o.betting ??= true;
     barSlot.replaceChildren();
-    const draw = () => body.replaceChildren(
+    const draw = () => put(body,
       h('div', null, h('h1', { style: { fontSize: '1.3rem' } }, 'Casino session'),
         h('p', { class: 'small muted' }, 'Play a real shoe at a full table: bet by the count, play with deviations, and answer surprise count checks. Every decision is graded.')),
       h('div', { class: 'panel' },
@@ -141,7 +141,7 @@ export function render(root) {
             return;
           }
           barSlot.replaceChildren(h('div', { class: 'actions', style: { gridTemplateColumns: `repeat(${Math.min(betChoices(ramp).length, 4)}, 1fr)` } },
-            betChoices(ramp).map((u) => h('button', { class: 'act chip', onclick: () => done(u) }, u === 0 ? 'Sit out' : `${u}u`)),
+            betChoices(ramp).map((u) => h('button', { class: 'act unit-bet', onclick: () => done(u) }, u === 0 ? 'Sit out' : `${u}u`)),
             h('button', { class: 'act H', onclick: () => done(null) }, 'Leave')));
         });
         if (bet === null) break;
@@ -208,7 +208,7 @@ export function render(root) {
           }
           if (ev.type !== 'settle' && ev.type !== 'split') {
             draw();
-            await sleep(delay);
+            await sleep(delay, root);
           }
           step = gen.next();
         }
@@ -242,7 +242,7 @@ export function render(root) {
       saveStats();
     }
     const metric = (k, v) => h('div', { class: 'metric' }, h('span', { class: 'k' }, k), h('span', { class: 'v' }, v));
-    body.replaceChildren(
+    put(body,
       h('h1', { style: { fontSize: '1.3rem' } }, 'Session summary'),
       h('div', { class: 'summary-grid' },
         metric('Rounds', String(s.rounds)),

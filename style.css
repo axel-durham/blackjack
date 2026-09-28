@@ -65,7 +65,8 @@ p { margin: 0; line-height: 1.5; }
 .icon-btn:active { background: #ffffff14; }
 
 main { flex: 1; overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
-.view { max-width: 720px; margin: 0 auto; min-height: 100%; display: flex; flex-direction: column; }
+#view { min-height: 100%; display: flex; flex-direction: column; }
+.view { max-width: 720px; width: 100%; margin: 0 auto; flex: 1; display: flex; flex-direction: column; }
 .view-body { padding: 12px 16px 16px; display: flex; flex-direction: column; gap: 12px; flex: 1; }
 
 .tabs {
@@ -185,7 +186,7 @@ main { flex: 1; overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling
 .act.no { background: var(--c-hit); }
 .act.chosen-bad { outline: 3px solid var(--bad); outline-offset: 2px; }
 .act.chosen-good, .act.correct { outline: 3px solid var(--good); outline-offset: 2px; }
-.act.chip { background: var(--gold); }
+.act.unit-bet { background: var(--gold); }
 
 /* ---------- feedback ---------- */
 .feedback { scroll-margin-bottom: 96px; border-radius: var(--radius); padding: 12px 14px; background: var(--surface); border: 1px solid var(--line); animation: reveal .18s ease-out; display: flex; flex-direction: column; gap: 8px; }

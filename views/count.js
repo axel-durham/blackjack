@@ -76,7 +76,7 @@ export function render(root) {
         const group = shown.slice(i, i + step);
         flashSlot.replaceChildren(h('div', { class: 'cards' }, group.map((c) => cardEl(c, { size: 'big' }))));
         progress.textContent = `${Math.min(i + step, shown.length)} / ${shown.length}`;
-        await sleep((1000 / opts.speed) * (step === 2 ? 1.4 : 1));
+        await sleep((1000 / opts.speed) * (step === 2 ? 1.4 : 1), root);
       }
       const secs = (performance.now() - t0) / 1000;
       if (my.cancelled || !alive) return;
@@ -182,7 +182,7 @@ export function render(root) {
         while (!token.cancelled && alive) {
           if (table.shuffleIfNeeded()) {
             prompt.replaceChildren(h('div', { class: 'feedback good' }, h('div', { class: 'fb-head' }, '♻ Shuffle'), h('div', { class: 'fb-body' }, 'New shoe. The count resets to 0.')));
-            await sleep(1400);
+            await sleep(1400, root);
             prompt.replaceChildren();
           }
           let turn = null;
@@ -194,10 +194,10 @@ export function render(root) {
             }
             if (ev.type === 'settle' || ev.type === 'split') { draw(turn); continue; }
             draw(turn);
-            await sleep(delay);
+            await sleep(delay, root);
           }
           draw(null);
-          await sleep(delay * 1.5);
+          await sleep(delay * 1.5, root);
           if (token.cancelled || !alive) return;
           sinceAsk++;
           const due = opts.ask === 'round' || (opts.ask === 'random' && sinceAsk >= askAfter) ||

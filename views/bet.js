@@ -65,7 +65,7 @@ export function render(root) {
         ? chipPicker({ unit: ramp.unit, maxBet: Math.max(...ramp.units) * ramp.unit, onBet: (d) => pickBet(d / ramp.unit),
           extra: ramp.wongOut ? [['Sit out', () => pickBet(0)]] : [] })
         : h('div', { class: 'actions', style: { gridTemplateColumns: `repeat(${Math.min(choices.length, 4)}, 1fr)`, position: 'static', padding: 0, background: 'none' } },
-          choices.map((u) => h('button', { class: 'act chip', onclick: () => pickBet(u) },
+          choices.map((u) => h('button', { class: 'act unit-bet', onclick: () => pickBet(u) },
             u === 0 ? 'Sit out' : `${u}u`, h('span', { class: 'kbd' }, u ? `$${u * ramp.unit}` : ''))));
       step2.replaceChildren(h('div', { class: 'panel' }, h('div', { class: 'small muted' }, `Bet at TC ${signed(tcUsed)}?`), bar));
 

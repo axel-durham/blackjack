@@ -1,4 +1,4 @@
-import { h, cardsEl, trayEl } from '../ui.js';
+import { h, cardsEl, trayEl, isShown } from '../ui.js';
 import { handInfo } from '../engine/hand.js';
 
 const RESULT_TEXT = { win: 'Win', lose: 'Lose', push: 'Push', blackjack: 'BJ', surrender: 'Surr' };
@@ -49,4 +49,10 @@ export function shoeInfo(table, rules, { showCount = false, compact = false } = 
     showCount && h('div', { class: 'metric' }, h('span', { class: 'k' }, 'RC / TC'), h('span', { class: 'v' }, `${table.rc} / ${table.tc}`)));
 }
 
-export const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+
+// Animation delay that also pauses while the tab owning `el` is hidden.
+export async function sleep(ms, el) {
+  await wait(ms);
+  while (el && el.isConnected && !isShown(el)) await wait(200);
+}

@@ -11,21 +11,46 @@ import * as chartsView from './views/charts.js';
 import * as fill from './views/fill.js';
 
 const VIEWS = { basic, index, count, bet, sim, fill, charts: chartsView };
-const viewRoot = document.getElementById('view');
-let cleanup = null;
+// Charts shows current stats, so it re-renders on every visit; every other tab stays
+// mounted (hidden) so a drill or casino session survives a trip to the charts.
+const FRESH_EACH_VISIT = new Set(['charts']);
+const host = document.getElementById('view');
+const main = document.getElementById('main');
+const mounted = new Map(); // name -> { el, cleanup, scroll }
+let current = null;
+
+function unmount(name) {
+  const m = mounted.get(name);
+  if (!m) return;
+  m.cleanup?.();
+  m.el.remove();
+  mounted.delete(name);
+}
 
 function route() {
-  const name = (location.hash.slice(1) || 'basic').split('/')[0];
-  const view = VIEWS[name] ?? basic;
-  cleanup?.();
-  viewRoot.replaceChildren();
-  document.getElementById('main').scrollTop = 0;
-  for (const a of document.querySelectorAll('[data-nav]')) {
-    a.toggleAttribute('aria-current', a.dataset.nav === (VIEWS[name] ? name : 'basic'));
-    if (a.hasAttribute('aria-current')) a.setAttribute('aria-current', 'page');
+  const hashName = (location.hash.slice(1) || 'basic').split('/')[0];
+  const name = VIEWS[hashName] ? hashName : 'basic';
+  if (current && mounted.has(current)) mounted.get(current).scroll = main.scrollTop;
+  if (FRESH_EACH_VISIT.has(name)) unmount(name);
+  for (const [n, m] of mounted) m.el.hidden = n !== name;
+  if (!mounted.has(name)) {
+    const el = h('div', { class: 'view' });
+    host.append(el);
+    mounted.set(name, { el, scroll: 0, cleanup: VIEWS[name].render(el) ?? null });
   }
-  cleanup = view.render(viewRoot) ?? null;
+  current = name;
+  main.scrollTop = mounted.get(name).scroll;
+  for (const a of document.querySelectorAll('[data-nav]')) {
+    if (a.dataset.nav === name) a.setAttribute('aria-current', 'page');
+    else a.removeAttribute('aria-current');
+  }
 }
+
+// Rule changes invalidate every drill and session in progress.
+function resetViews() {
+  for (const name of [...mounted.keys()]) unmount(name);
+}
+let settingsDirty = false;
 
 function updatePill() {
   const r = settings.rules;
@@ -51,7 +76,10 @@ function select(label, options, get, set, help) {
 function buildSettings() {
   const r = settings.rules;
   const ramp = settings.ramp;
-  const changed = () => {
+  // Only table-rule changes restart drills and sessions; ramp, chips and practice
+  // toggles are read live.
+  const changed = (resets = false) => {
+    if (resets) settingsDirty = true;
     saveSettings();
     updatePill();
   };
@@ -67,16 +95,16 @@ function buildSettings() {
       h('div', { class: 'section-title' }, 'Table rules'),
       h('div', { class: 'panel' },
         select('Decks', [[2, 'Double deck'], [4, '4 decks'], [6, '6 decks'], [8, '8 decks']], () => r.decks,
-          (v) => { r.decks = Number(v); changed(); }, 'Double deck uses its own chart and indices'),
+          (v) => { r.decks = Number(v); changed(true); }, 'Double deck uses its own chart and indices'),
         select('Soft 17', [['h17', 'Dealer hits (H17)'], ['s17', 'Dealer stands (S17)']], () => (r.h17 ? 'h17' : 's17'),
-          (v) => { r.h17 = v === 'h17'; changed(); }),
-        toggle('Double after split', () => r.das, (v) => { r.das = v; changed(); }),
-        toggle('Late surrender', () => r.surrender, (v) => { r.surrender = v; changed(); }),
+          (v) => { r.h17 = v === 'h17'; changed(true); }),
+        toggle('Double after split', () => r.das, (v) => { r.das = v; changed(true); }),
+        toggle('Late surrender', () => r.surrender, (v) => { r.surrender = v; changed(true); }),
         select('Penetration', [[0.65, '65%'], [0.7, '70%'], [0.75, '75%'], [0.8, '80%'], [0.85, '85%']], () => r.penetration,
-          (v) => { r.penetration = Number(v); changed(); }, 'Where the cut card sits (Count & Casino)')),
+          (v) => { r.penetration = Number(v); changed(true); }, 'Where the cut card sits (Count & Casino)')),
       h('div', { class: 'section-title' }, 'Deviations'),
       h('div', { class: 'panel' },
-        toggle('Expanded index plays', () => !!r.expanded, (v) => { r.expanded = v; changed(); },
+        toggle('Expanded index plays', () => !!r.expanded, (v) => { r.expanded = v; changed(true); },
           'Adds EV-model indices for every other cell that flips between TC −3 and +6, beyond BJA’s chart')),
       h('div', { class: 'section-title' }, 'Bet ramp (units by true count)'),
       h('div', { class: 'panel' },
@@ -102,7 +130,11 @@ document.getElementById('open-settings').addEventListener('click', () => {
   buildSettings();
   dialog.showModal();
 });
-dialog.addEventListener('close', route);
+dialog.addEventListener('close', () => {
+  if (settingsDirty) resetViews();
+  settingsDirty = false;
+  route();
+});
 dialog.addEventListener('click', (e) => { if (e.target === dialog) dialog.close(); });
 
 window.addEventListener('hashchange', route);
