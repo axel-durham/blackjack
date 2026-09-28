@@ -104,6 +104,8 @@ function buildSettings() {
           (v) => { r.penetration = Number(v); changed(true); }, 'Where the cut card sits (Count & Casino)')),
       h('div', { class: 'section-title' }, 'Deviations'),
       h('div', { class: 'panel' },
+        toggle('Casino: grade with deviations', () => settings.deviations !== false, (v) => { settings.deviations = v; changed(); },
+          'Off: Casino plays are scored against basic strategy only (and insurance is always no)'),
         toggle('Expanded index plays', () => !!r.expanded, (v) => { r.expanded = v; changed(true); },
           'Adds EV-model indices for every other cell that flips between TC −3 and +6, beyond BJA’s chart')),
       h('div', { class: 'section-title' }, 'Bet ramp (units by true count)'),

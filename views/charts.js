@@ -37,7 +37,7 @@ export function render(root) {
       h('p', { class: 'small muted' }, `Basic strategy for ${rulesLabel(rules)}.`),
       seg([['plain', 'Chart'], ['index', 'With indices'], ['heat', 'My mistakes']], overlay, (v) => { overlay = v; draw(); }, 'Overlay'),
       overlay === 'index' && h('p', { class: 'small muted' }, 'Red numbers replace cells with an index play: “3+” means deviate at TC +3 or higher, “−1−” at −1 or lower, “0+ / 0−” at any positive / negative running count.'),
-      overlay === 'heat' && h('p', { class: 'small muted' }, 'Red tint shows how often you miss each cell in the Basic drill.'),
+      overlay === 'heat' && h('p', { class: 'small muted' }, 'Red tint shows how often you miss each cell, across the Basic drill, Fill and Casino sessions.'),
       ...tables.map((t) => chartCard(t, rules, opts)),
       h('p', { class: 'panel small' }, h('span', null, h('b', null, 'Insurance / even money: '), 'never with basic strategy; take it at TC +3 or higher when counting.')),
     ];
@@ -99,7 +99,7 @@ export function render(root) {
         const d = all.find((x) => x.id === id);
         return row(d ? d.title : id, `${c.wrong}/${c.n} missed`, d ? indexLabel(d) : '');
       })),
-      h('p', { class: 'small muted' }, 'See the Strategy tab → “My mistakes” for a heatmap of basic-strategy misses. Progress is stored only on this device.'),
+      h('p', { class: 'small muted' }, 'See the Strategy tab → “My mistakes” for a heatmap of misses from Basic, Fill and Casino. Progress is stored only on this device.'),
       h('button', { class: 'btn ghost', onclick: () => { if (confirm('Reset all practice stats on this device?')) { resetStats(); draw(); } } }, 'Reset stats'),
     ].filter(Boolean);
   }

@@ -10,6 +10,7 @@ export const DEFAULT_SETTINGS = {
   autoAdvance: true,
   haptics: true,
   chips: false, // bet with casino chips instead of unit buttons
+  deviations: true, // Casino grades plays with index plays (false = basic strategy only)
   countDisplay: 'rc', // tc | rc | tray — how the Index drill shows the count
   count: { speed: 2, players: 4, askTc: false },
   sim: { players: 3, speed: 1, checks: true },

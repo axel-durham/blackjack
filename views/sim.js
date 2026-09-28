@@ -1,12 +1,14 @@
 import { h, seg, keypad, toast, buzz, bindKeys, ACTION_KEYS, chipPicker, money, put } from '../ui.js';
-import { settings, saveSettings, stats, saveStats, pct } from '../store.js';
+import { settings, saveSettings, stats, saveStats, pct, recordCell } from '../store.js';
 import { Shoe } from '../engine/cards.js';
 import { TableState, playRound } from '../engine/table.js';
 import { decide } from '../engine/strategy.js';
-import { shouldInsure } from '../engine/active.js';
+import { shouldInsure, activeDeviations } from '../engine/active.js';
 import { plausibleTrueCounts, signed } from '../engine/count.js';
 import { betUnits, betChoices } from '../engine/betting.js';
-import { describeHand, upLabel } from '../engine/hand.js';
+import { describeHand, upLabel, handInfo } from '../engine/hand.js';
+import { situationKey } from '../engine/scenarios.js';
+import { KIND_TO_TABLE } from './chartview.js';
 import { upValue } from '../engine/cards.js';
 import { actionBar, actionName } from './common.js';
 import { tableEl, shoeInfo, sleep } from './tableview.js';
@@ -34,6 +36,8 @@ export function render(root) {
       h('div', { class: 'panel' },
         h('div', { class: 'small muted' }, 'Other players'),
         seg([[0, 'Heads-up'], [1, '1'], [2, '2'], [3, '3'], [4, '4'], [5, '5'], [6, '6']], o.players, (v) => { o.players = v; saveSettings(); draw(); }),
+        h('div', { class: 'small muted' }, 'Grade my plays against'),
+        seg([[false, 'Basic strategy'], [true, 'Basic + deviations']], settings.deviations !== false, (v) => { settings.deviations = v; saveSettings(); draw(); }, 'Scoring'),
         h('div', { class: 'small muted' }, 'Dealing speed'),
         seg([[1, 'Slow'], [2, 'Casino'], [3, 'Fast']], o.speed > 3 ? 2 : o.speed, (v) => { o.speed = v; saveSettings(); draw(); }),
         h('label', { class: 'field' }, h('span', null, 'Betting', h('small', null, 'Off: flat 1-unit bets, no bet grading — just play the hands')),
@@ -55,7 +59,7 @@ export function render(root) {
     return h('div', null, h('div', { class: 'section-title', style: { marginBottom: '8px' } }, 'Recent sessions'),
       h('div', { class: 'list' }, hist.map((s) => h('div', { class: 'li' },
         h('div', { class: 'grow' }, `${s.rounds} rounds · ${s.net >= 0 ? '+' : ''}${s.net}u`,
-          h('div', { class: 'sub' }, `Plays ${pct(s.playOk, s.plays)} · Bets ${pct(s.betOk, s.bets)} · Counts ${pct(s.countOk, s.counts)}`)),
+          h('div', { class: 'sub' }, `${s.mode === 'basic' ? 'Basic' : 'Basic + dev.'}: plays ${pct(s.playOk, s.plays)} · Bets ${pct(s.betOk, s.bets)} · Counts ${pct(s.countOk, s.counts)}`)),
         h('span', { class: 'sub' }, new Date(s.ts).toLocaleDateString())))));
   }
 
@@ -171,10 +175,15 @@ export function render(root) {
                 h('button', { class: 'act yes', onclick: () => done(true) }, 'Insurance'),
                 h('button', { class: 'act no', onclick: () => done(false) }, 'No insurance')));
             });
-            const right = new Set(acceptTcs().map((tc) => shouldInsure(rules, { tc, rc: table.rc })));
+            // Basic strategy never takes insurance; with deviations it's an index play (TC +3).
+            const withDevs = settings.deviations !== false;
+            const right = withDevs ? new Set(acceptTcs().map((tc) => shouldInsure(rules, { tc, rc: table.rc }))) : new Set([false]);
             s.plays++;
             if (right.has(take)) s.playOk++;
-            else mistake(`Insurance: take it at TC +3 or higher. TC was ${signed(table.tc)}.`);
+            else mistake(withDevs ? `Insurance: take it at TC +3 or higher. TC was ${signed(table.tc)}.` : 'Insurance: basic strategy never takes it.');
+            const ins = activeDeviations(rules).find((d) => d.kind === 'insurance');
+            if (ins && withDevs) recordCell('index', ins.id, right.has(take));
+            saveStats();
             barSlot.replaceChildren();
             step = gen.next(take);
             continue;
@@ -194,11 +203,16 @@ export function render(root) {
             });
             barSlot.replaceChildren();
             const count = { rc: table.rc, tc: table.tc };
-            const exact = decide(hand.cards, up, rules, { legal: ev.legal, count });
-            const ok = acceptTcs().some((tc) => decide(hand.cards, up, rules, { legal: ev.legal, count: { tc, rc: table.rc } }).action === action);
+            // Scoring mode is read live, so it can be switched mid-session.
+            const withDevs = settings.deviations !== false;
+            const exact = decide(hand.cards, up, rules, { legal: ev.legal, count: withDevs ? count : undefined });
+            const ok = withDevs
+              ? acceptTcs().some((tc) => decide(hand.cards, up, rules, { legal: ev.legal, count: { tc, rc: table.rc } }).action === action)
+              : exact.action === action;
             s.plays++;
             if (ok) s.playOk++;
-            else {
+            logDecision(hand.cards, up, ev.legal, action, exact.action, ok);
+            if (!ok) {
               const dv = exact.deviation;
               mistake(`${describeHand(hand.cards)} v ${upLabel(upValue(up))}: ${actionName(exact.action)}, not ${actionName(action)}.` +
                 (dv ? ` Index play ${dv.title} (RC ${signed(count.rc)}, TC ${signed(count.tc)}).` : ' Basic strategy.'));
@@ -233,9 +247,28 @@ export function render(root) {
     })();
   }
 
+  // Feed casino decisions into the same per-cell records as the drills, so they show in
+  // Charts → My mistakes and steer the Basic / Index drills.
+  function logDecision(cards, upCard, legal, action, correct, ok) {
+    const rules = settings.rules;
+    const info = handInfo(cards);
+    const up = upValue(upCard);
+    let table = info.soft ? 'soft' : 'hard';
+    let key = info.total;
+    if (legal.P && (action === 'P' || correct === 'P')) {
+      table = 'pairs';
+      key = info.pair;
+    } else if (legal.R && !info.soft && (action === 'R' || correct === 'R')) table = 'surrender';
+    recordCell('basic', situationKey(table, key, up), ok);
+    const spot = activeDeviations(rules).find((d) => KIND_TO_TABLE[d.kind] === table && d.key === key && d.up === up);
+    if (spot && settings.deviations !== false) recordCell('index', spot.id, ok);
+    saveStats();
+  }
+
   function summary(s) {
     if (!alive) return;
-    const rec = { ts: Date.now(), rounds: s.rounds, net: s.net, plays: s.plays, playOk: s.playOk, bets: s.bets, betOk: s.betOk, counts: s.counts, countOk: s.countOk };
+    const mode = settings.deviations !== false ? 'deviations' : 'basic';
+    const rec = { ts: Date.now(), mode, rounds: s.rounds, net: s.net, plays: s.plays, playOk: s.playOk, bets: s.bets, betOk: s.betOk, counts: s.counts, countOk: s.countOk };
     if (s.rounds) {
       stats.sim.history.push(rec);
       stats.sim.history = stats.sim.history.slice(-100);
@@ -247,7 +280,7 @@ export function render(root) {
       h('div', { class: 'summary-grid' },
         metric('Rounds', String(s.rounds)),
         metric('Result', `${s.net >= 0 ? '+' : '−'}${Math.abs(s.net)}u`),
-        metric('Playing', pct(s.playOk, s.plays)),
+        metric(mode === 'basic' ? 'Playing (basic)' : 'Playing (+ dev.)', pct(s.playOk, s.plays)),
         s.bets > 0 && metric('Betting', pct(s.betOk, s.bets)),
         metric('Count checks', `${s.countOk}/${s.counts}`),
         metric(`At $${s.unit}/unit`, `${s.net * settings.ramp.unit >= 0 ? '+' : '−'}$${Math.abs(s.net * settings.ramp.unit)}`)),
