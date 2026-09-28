@@ -3,7 +3,7 @@ import { UPS, cellCode } from '../engine/tables.js';
 import { shortIndex } from '../engine/deviations.js';
 import { activeDeviations } from '../engine/active.js';
 
-const upHead = (u) => (u === 11 ? 'A' : String(u));
+export const upHead = (u) => (u === 11 ? 'A' : String(u));
 
 export const TABLE_ROWS = {
   pairs: [11, 10, 9, 8, 7, 6, 5, 4, 3, 2],
@@ -20,7 +20,7 @@ export function rowLabel(table, key) {
   return String(key);
 }
 
-const KIND_TO_TABLE = { pair: 'pairs', soft: 'soft', hard: 'hard', surrender: 'surrender' };
+export const KIND_TO_TABLE = { pair: 'pairs', soft: 'soft', hard: 'hard', surrender: 'surrender' };
 
 /**
  * Renders a chart (or selected rows of it) for the given rules.

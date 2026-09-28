@@ -18,4 +18,6 @@
   - TC and bet grading with half-deck leniency
   - A casino session with a count check, graded mistakes and a summary
   - The settings sheet, and switching to double deck plus expanded plays
-- **Not yet verified:** the published site on GitHub Pages; the service worker, which only registers over HTTPS; and home-screen install on a real iPhone.
+- Fill mode: filled the hard chart through simulated touch taps with two deliberate errors. It scored 98/100, marked exactly those two cells with the right answers, and "Redo misses" blanked only those two. The index template shows the 26 BJA index cells for 6D H17.
+- **Published** to GitHub Pages from `main` /(root) at blackjack.axeldurham.com. DNS resolves to axel-durham.github.io, the certificate was approved after re-saving the custom domain, HTTPS is enforced, and http 301-redirects to https. Every asset returns 200 over the public domain. The service worker registers on the live site and there are no console errors.
+- **Not yet verified:** home-screen install on a real iPhone.

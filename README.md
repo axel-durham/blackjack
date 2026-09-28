@@ -9,6 +9,7 @@ A mobile-first card counting trainer for `blackjack.axeldurham.com`: basic strat
 - **Count**: *Full table* deals a real shoe to 1–7 players who play basic strategy, then asks for the running count (and optionally the true count) every round, at random, or at the end of the shoe. *Deck countdown* flashes a deck with 1–3 cards secretly removed, at 1–6 cards per second.
 - **TC & Bet**: convert a running count and a discard tray into a true count, then size the bet from your ramp.
 - **Casino**: a full session at a table. Bet by the count, play your hand with deviations, answer surprise count checks. Every decision is graded, and the session summary lists your mistakes and a bankroll curve.
+- **Fill**: blank chart templates (hard, soft, pairs, surrender, and an index chart whose deviation cells are blank). Pick a play from the palette, then tap cells or swipe along a row. Check grades every cell. Misses feed the Basic and Index drills.
 - **Charts**: basic strategy for the current rules, index overlays, a heatmap of your misses, the index list, your ramp, and stats.
 
 ⚙︎ Settings: decks (2 / 4 / 6 / 8), H17 or S17, DAS, late surrender, penetration, expanded index plays, bet ramp and unit, wong-out, auto-advance.

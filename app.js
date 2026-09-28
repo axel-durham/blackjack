@@ -8,8 +8,9 @@ import * as count from './views/count.js';
 import * as bet from './views/bet.js';
 import * as sim from './views/sim.js';
 import * as chartsView from './views/charts.js';
+import * as fill from './views/fill.js';
 
-const VIEWS = { basic, index, count, bet, sim, charts: chartsView };
+const VIEWS = { basic, index, count, bet, sim, fill, charts: chartsView };
 const viewRoot = document.getElementById('view');
 let cleanup = null;
 

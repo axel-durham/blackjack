@@ -91,6 +91,8 @@ export function render(root) {
         row('True count conversion', pct(stats.tc.correct, stats.tc.answered), `${stats.tc.answered} answered`),
         row('Bet sizing', pct(stats.bet.correct, stats.bet.answered), `${stats.bet.answered} answered`),
         row('Count checks', pct(stats.count.correct, stats.count.checks), stats.count.deckBest ? `Best deck countdown ${stats.count.deckBest.toFixed(1)}s` : `${stats.count.checks} checks`),
+        row('Chart fill-ins', String(Object.values(stats.fill).reduce((a, f) => a + f.attempts, 0)),
+          Object.entries(stats.fill).map(([id, f]) => `${id.split('|')[0]} ${f.best}/${f.total}`).join(' · ') || 'Best scores appear here'),
         row('Casino sessions', String(sims.length), sims.length ? `${sims.reduce((a, s) => a + s.rounds, 0)} rounds · ${sims.reduce((a, s) => a + s.net, 0)}u net` : '')),
       worst.length && h('div', { class: 'section-title' }, 'Index plays to review'),
       worst.length && h('div', { class: 'list' }, worst.map(([id, c]) => {

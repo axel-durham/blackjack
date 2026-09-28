@@ -21,6 +21,7 @@ const blankStats = () => ({
   bet: { answered: 0, correct: 0 },
   count: { checks: 0, correct: 0, deckBest: null, history: [] },
   sim: { history: [] },
+  fill: {}, // chart id -> { attempts, best, total }
 });
 
 function read(key) {
@@ -75,6 +76,14 @@ export function record(bucket, key, ok) {
     if (!ok) cell.wrong++;
   }
   saveStats();
+}
+
+// Log a graded cell without touching the drill's answer count or streak; misses from other
+// modes still steer which situations the drill serves next.
+export function recordCell(bucket, key, ok) {
+  const cell = (stats[bucket].cells[key] ??= { n: 0, wrong: 0 });
+  cell.n++;
+  if (!ok) cell.wrong++;
 }
 
 export const pct = (c, n) => (n ? `${Math.round((100 * c) / n)}%` : '—');

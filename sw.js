@@ -1,6 +1,6 @@
 // Offline cache for the static app. Bump VERSION when shipping changes; pages are served
 // cache-first and refreshed in the background, so an update shows up on the next launch.
-const VERSION = 'bj-v2';
+const VERSION = 'bj-v3';
 const ASSETS = [
   './', './index.html', './style.css', './app.js', './ui.js', './store.js', './manifest.webmanifest',
   './icons/icon-180.png', './icons/icon-192.png', './icons/icon-512.png',
@@ -8,7 +8,7 @@ const ASSETS = [
   './engine/deviations.js', './engine/hand.js', './engine/rules.js', './engine/scenarios.js', './engine/strategy.js',
   './engine/table.js', './engine/tables.js',
   './views/basic.js', './views/bet.js', './views/charts.js', './views/chartview.js', './views/common.js',
-  './views/count.js', './views/index.js', './views/sim.js', './views/tableview.js',
+  './views/count.js', './views/fill.js', './views/index.js', './views/sim.js', './views/tableview.js',
 ];
 
 self.addEventListener('install', (e) => {
