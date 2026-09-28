@@ -1,6 +1,6 @@
 {
-  "name": "Blackjack Lab",
-  "short_name": "Blackjack Lab",
+  "name": "Blackjack Trainer",
+  "short_name": "Blackjack",
   "description": "Card counting trainer: basic strategy, Hi-Lo deviations, true count, bet ramp and full-table counting.",
   "start_url": "./#basic",
   "scope": "./",

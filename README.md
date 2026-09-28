@@ -1,4 +1,4 @@
-# Blackjack Lab
+# Blackjack Trainer
 
 A mobile-first card counting trainer for `blackjack.axeldurham.com`: basic strategy, Hi-Lo index plays, true count conversion, bet ramp, and counting a full table. It follows the sibling `poker` site's setup: plain HTML/CSS/JavaScript modules, no build step, GitHub Pages.
 
